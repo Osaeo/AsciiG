@@ -6,6 +6,8 @@
 
 using namespace std;
 
+void Clear() { cout << "\x1B[2J\x1B[H"; }
+
 struct pixell{
     int red = 0;
     int blue = 0;
@@ -77,6 +79,8 @@ char tr(int nb) {
             return 'W';
         case 18:
             return 'M';
+        default:
+            return 'M';
 
     }
 }
@@ -85,13 +89,13 @@ char tr(int nb) {
 int main(int argc, char** argv) {
 
     //taille de la sortie
-    int widht_out = -1;
-    int height_out = -1;
-    int widht_pict = 0;
-    int height_pict = 0;
+    double widht_out = -1;
+    double height_out = -1;
+    double widht_pict = 0;
+    double height_pict = 0;
     bool height_error = false;
 
-    vector<vector<int> > image_grise;
+    vector<vector<double> > image_grise;
 
     //verifier qu'il y a des argument
     if (argc < 2) {
@@ -145,7 +149,7 @@ int main(int argc, char** argv) {
 
     // initialiser correctement l'image grise(le tableau)
     for(int x = 0; x < widht_pict ; x++){
-        image_grise.push_back(vector<int>(height_pict));
+        image_grise.push_back(vector<double>(height_pict));
     }
 
     //mettre l'image dedans
@@ -158,21 +162,56 @@ int main(int argc, char** argv) {
     }
 
     //le nombre de pixel par charactere
-    int wnbch = widht_pict / widht_out;
-    int hnbch = height_pict / height_out;
+    double wnbch = widht_pict / widht_out;
+    double hnbch = height_pict / height_out;
 
-
-
-    cout << "widht : " << widht_pict / (widht_pict / widht_out) << endl;
-    cout << "height : " << height_pict / (height_pict / height_out) << endl;
-
-    vector<vector<int> > finish;
-    // initialiser correctement le finish(le tableau)
-    for(int x = 0; x < widht_out ; x++){
-        finish.push_back(vector<int>(height_out));
+    //creer un tableau pour faire la moyenne pour le charactere
+    vector<vector<double> >pixelm;
+    for(int x = 0; x < wnbch ; x++){
+        pixelm.push_back(vector<double>(hnbch));
     }
 
+    cout << "widht : " << widht_pict / widht_out << endl;
+    cout << "height : " << height_pict / height_out << endl;
 
+    //tableau des moyennes
+    vector<vector<double> > moy;
+    for(int x = 0; x < widht_out ; x++){
+        moy.push_back(vector<double>(height_out));
+    }
+
+    for(int x = 0; x < widht_out; x++){
+        for(int y = 0; y < height_out; y++){
+            int total = 0;
+
+            for(int xs = x * wnbch; xs < (x * wnbch) + wnbch; xs++){
+                for(int ys = y * hnbch; ys < (y * hnbch) + hnbch; ys++){
+                    total += image_grise[xs][ys];
+                }
+            }
+            moy[x][y] = total / (widht_out * height_out);
+        }
+    }
+
+    vector<vector<char> > finish;
+    // initialiser correctement le finish(le tableau)
+    for(int x = 0; x < widht_out ; x++){
+        finish.push_back(vector<char>(height_out));
+    }
+    
+    for(int x = 0; x < widht_out; x++){
+        for(int y = 0; y < height_out; y ++){
+            finish[x][y] = tr(moy[x][y]);
+        }
+    }
+
+    for(int y = 0; y < height_out; y++){
+        string result;
+        for(int x = 0; x < widht_out; x++){
+            result.append(1, finish[x][y]);
+        }
+        cout << result << endl;
+    }
 
     return 0;
 }
